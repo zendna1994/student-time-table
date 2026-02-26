@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Timetable - Student</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* Enhanced Tailwind-like CSS */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --bg-light: #f3f6fb;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --shadow-subtle: 0 4px 15px rgba(0,0,0,0.05);
+    --primary-shadow: 0 3px 10px rgba(13, 110, 253, 0.4);
+    --hover-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+body {
+    margin: 0;
+    font-family: 'Times New Roman', Times, serif;
+    background: var(--bg-light);
+    color: #222;
+}
+
+.wrap {
+    max-width: 960px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow-subtle);
+    padding: 20px;
+    transition: box-shadow 0.3s ease-in-out;
+}
+.wrap:hover { box-shadow: var(--hover-shadow); }
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+#clock {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 15px 0 25px 0;
+}
+
+.tab {
+    padding: 6px 12px; 
+    font-size: 0.85rem; 
+    border-radius: 8px;
+    background: #e9eef6;
+    cursor: pointer;
+    font-weight: 700;
+    color: #334;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    background: #dbe3f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+}
+
+.tab.active {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: var(--primary-shadow);
+}
+
+.content { display: none; padding: 10px 0; }
+.content.active { display: block; }
+
+input[type=date], input[type=text], select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    min-width: 150px;
+}
+
+#searchFilterControls > div {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#searchOut {
+    margin-top: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto; 
+    margin-top: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+table {
+    width: 100%;
+    min-width: 650px; 
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th, td {
+    padding: 12px 10px;
+    text-align: left;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f0f4fa;
+}
+
+th { background: var(--primary-color); color: #fff; }
+
+button {
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-color);
+    color: #fff;
+    padding: 8px 16px; 
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.search-category-header {
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    color: var(--primary-color);
+    margin: 20px 0 10px 0; 
+    border-bottom: 2px solid #eee;
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.result-line {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fff;
+    border: 1px solid #e0e6ed;
+    text-align: left;
+}
+
+.result-line .date { 
+    font-weight: 700; 
+    color: #333; 
+    margin-right: 25px; 
+    display: inline-block;
+}
+
+.result-line .status {
+    font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 700;
+    text-transform: uppercase; display: inline-block;
+}
+.result-line .status.today { background: #28a745; color: #fff; }
+.result-line .status.upcoming { background: #ffc107; color: #333; }
+.result-line .status.past { background: #6c757d; color: #fff; }
+
+/* PRINT STYLES */
+#printHeader, #printFooter { display: none; }
+
+@media print {
+    body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .tabs, button, input, select, label, header, #clock, #yearTabs { display: none !important; }
+    .wrap { box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
+    #searchOut { max-height: none; overflow: visible; border: none; }
+    
+    #printHeader { 
+        display: block; 
+        text-align: center; 
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 4px double var(--primary-color);
+        background: #f8faff;
+    }
+    #printHeader img { width: 120px; margin-bottom: 10px; }
+    #printHeader h1 { 
+        font-size: 1.25rem; 
+        color: #1a3a5f; 
+        margin: 5px 0; 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    #printHeader h2 { 
+        font-size: 1rem; 
+        color: var(--primary-color); 
+        margin: 5px 0 15px 0; 
+        border-bottom: 1px solid #cbd5e1;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+    #printHeader .print-meta { 
+        font-size: 0.95rem; 
+        line-height: 1.6;
+        background: white;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #e2e8f0;
+    }
+
+    #printFooter { 
+        display: block; 
+        margin-top: 40px; 
+        padding-top: 15px; 
+        border-top: 2px solid var(--primary-color); 
+        font-size: 0.8rem; 
+        color: #444; 
+        text-align: center;
+        font-style: italic;
+    }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div id="printHeader">
+        <img src="https://static.wixstatic.com/media/e98a4d_b935ab57540b41bdb320efa88b5e69b1~mv2.png" alt="Logo">
+        <h1>Zoology E-Learning Network - Departmental Nurturing Academics</h1>
+        <h2>Timetable - Student</h2>
+        <div id="printMetaInfo" class="print-meta"></div>
+    </div>
+
+    <header>
+        <h2>Timetable - Student</h2>
+        <div id="clock">--:--:--</div>
+    </header>
+
+    <div class="tabs" id="mainTabs">
+        <div class="tab main-tab active" data-tab="dayinfo">Day Info</div>
+        <div class="tab main-tab" data-tab="timetable">Timetable</div>
+        <div class="tab main-tab" data-tab="search">Search</div>
+    </div>
+
+    <div id="dayinfo" class="content active">
+        <div style="text-align:center;">
+            <label><strong>Select Date:</strong></label>
+            <input type="date" id="datePick">
+        </div>
+        <div id="meta" style="text-align:center;margin:15px 0;font-size:1.1rem;font-weight:700;padding:10px;border-radius:8px;background:#fffbe6;border:1px solid #ffe0b2;"></div>
+        <div id="holidayReason" style="text-align:center;color:#666;font-style:italic;"></div>
+    </div>
+
+    <div id="timetable" class="content">
+        <div id="yearTabs" class="tabs" style="margin: 8px 0;">
+            <div class="year-tab tab active" data-year="1st UG">1st UG</div>
+            <div class="year-tab tab" data-year="2nd UG">2nd UG</div>
+            <div class="year-tab tab" data-year="3rd UG">3rd UG</div>
+            <div class="year-tab tab" data-year="1st PG">1st PG</div>
+            <div class="year-tab tab" data-year="2nd PG">2nd PG</div>
+        </div>
+        <div id="tableContainer"></div>
+        <p id="ttNote" style="text-align:center;color:#666;margin-top:15px;font-size:0.9rem;"></p>
+        <div style="text-align:center;margin-top:20px;">
+            <button id="printBtn">Print Timetable</button>
+        </div>
+    </div>
+
+    <div id="search" class="content">
+        <div id="searchFilterControls" style="padding: 10px; border-radius: 8px; background: #f8faff;">
+            <div>
+                <label><strong>Filter by Year:</strong></label>
+                <select id="searchYearSelect">
+                    <option value="">-- All Years --</option>
+                    <option value="1st UG">1st UG</option>
+                    <option value="2nd UG">2nd UG</option>
+                    <option value="3rd UG">3rd UG</option>
+                    <option value="1st PG">1st PG</option>
+                    <option value="2nd PG">2nd PG</option>
+                </select>
+            </div>
+            <div>
+                <label><strong>Filter by Subject:</strong></label>
+                <select id="searchSubjectSelect" style="width: 250px;"><option value="">-- Select Subject (Optional) --</option></select>
+            </div>
+            <div>
+                <label><strong>Search by Staff:</strong></label>
+                <input type="text" id="staffSearch" placeholder="Staff Name" style="width:80%;max-width:300px;">
+            </div>
+        </div>
+        <div id="searchOut" style="text-align:center; padding-top: 20px;">Use the filters or type the Staff Name in search bar</div>
+    </div>
+
+    <div id="printFooter">
+        <p>This is generated in timetable student section of ZEN - DNA website.</p>
+        <p id="printDetails"></p>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+const dayInfoUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSlPaldSsB6LS1eDDZO9xSnmmcJcQZBGwI9XfvyEcrhnielFa97O7S-fERMBipoRBSBbUDAhN67kw7/pub?gid=0&single=true&output=csv";
+const generalTTUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSlPaldSsB6LS1eDDZO9xSnmmcJcQZBGwI9XfvyEcrhnielFa97O7S-fERMBipoRBSBbUDAhN67kw7/pub?gid=1200579414&single=true&output=csv";
+const timePeriodUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSlPaldSsB6LS1eDDZO9xSnmmcJcQZBGwI9XfvyEcrhnielFa97O7S-fERMBipoRBSBbUDAhN67kw7/pub?gid=1657470059&single=true&output=csv";
+
+let dayInfo = [], ttMap = {}, timeSlots = {}, selectedDate = "", currentYear = "1st UG";
+const HOUR_COLS = ["1st Hour", "2nd Hour", "3rd Hour", "4th Hour", "5th Hour"];
+let uniqueSubjects = {};
+let todayUTC;
+
+function parseDate(dateStr) {
+    if (!dateStr || dateStr.length !== 10) return null;
+    const parts = dateStr.split('-');
+    return new Date(Date.UTC(parts[2], parts[1] - 1, parts[0]));
+}
+function getTodayDateUTC() {
+    const now = new Date();
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+function updateClock() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('clock').textContent = `${now.toLocaleDateString('en-IN', options)} - ${now.toLocaleTimeString('en-IN', { hour12: true })}`;
+}
+function ymdToDMY(ymd) { if (!ymd) return ""; const [y, m, d] = ymd.split('-'); return `${d}-${m}-${y}`; }
+function toIST_YMD() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+function loadCSV(url) { return new Promise(resolve => { Papa.parse(url, { download: true, header: true, complete: r => resolve(r.data.filter(row => Object.values(row).some(v => v !== null && v !== ""))) }) }); }
+function splitSubject(txt) { 
+    const parts = txt.split("-"); 
+    if (parts.length >= 3) return [parts[0].trim(), parts[1].trim(), parts.slice(2).join("-").trim()]; 
+    return ["-", txt.trim(), "-"];
+}
+function findDayInfo(dateStr) { return dayInfo.find(r => r.Date === dateStr) || null; }
+
+function buildUniqueSubjects() {
+    uniqueSubjects = { "1st UG": new Set(), "2nd UG": new Set(), "3rd UG": new Set(), "1st PG": new Set(), "2nd PG": new Set() };
+    Object.keys(ttMap).forEach(k => {
+        const year = k.split('|')[1];
+        if (uniqueSubjects[year]) HOUR_COLS.forEach(h => {
+            const ci = ttMap[k][h];
+            if (ci && ci.trim() !== "No Class") { const sj = splitSubject(ci)[1]; if (sj && sj !== "-") uniqueSubjects[year].add(sj); }
+        });
+    });
+    Object.keys(uniqueSubjects).forEach(y => { uniqueSubjects[y] = Array.from(uniqueSubjects[y]).sort(); });
+}
+
+function populateSubjectDropdown(y) {
+    const s = document.getElementById('searchSubjectSelect');
+    s.innerHTML = '<option value="">-- Select Subject (Optional) --</option>';
+    if (y && uniqueSubjects[y]) uniqueSubjects[y].forEach(sub => {
+        const o = document.createElement('option'); o.value = sub.toLowerCase(); o.textContent = sub; s.appendChild(o);
+    });
+}
+
+async function init() {
+    todayUTC = getTodayDateUTC();
+    setInterval(updateClock, 1000); updateClock();
+    document.querySelectorAll('.main-tab').forEach(t => { t.onclick = () => { document.querySelectorAll('.main-tab').forEach(x => x.classList.remove('active')); document.querySelectorAll('.content').forEach(x => x.classList.remove('active')); t.classList.add('active'); document.getElementById(t.dataset.tab).classList.add('active'); if (t.dataset.tab === 'search') searchStaff(); }; });
+    document.querySelectorAll('.year-tab').forEach(yt => { yt.onclick = function() { document.querySelectorAll('.year-tab').forEach(x => x.classList.remove('active')); this.classList.add('active'); currentYear = this.dataset.year; renderTimetable(); }; });
+    const dp = document.getElementById('datePick');
+    dp.value = toIST_YMD(); selectedDate = ymdToDMY(dp.value);
+    dp.onchange = e => { selectedDate = ymdToDMY(e.target.value); renderDayMeta(); };
+    const [di, gt, tp] = await Promise.all([loadCSV(dayInfoUrl), loadCSV(generalTTUrl), loadCSV(timePeriodUrl)]);
+    dayInfo = di;
+    tp.forEach(r => { if (r.Hour) timeSlots[r.Hour.trim()] = r.Time; });
+    gt.forEach(r => { if (r["Day Order"] && r["Year"]) ttMap[`${r["Day Order"].trim()}|${r["Year"].trim()}`] = r; });
+    buildUniqueSubjects();
+    const sy = document.getElementById('searchYearSelect');
+    sy.onchange = () => { populateSubjectDropdown(sy.value); searchStaff(); };
+    document.getElementById('searchSubjectSelect').onchange = searchStaff;
+    document.getElementById('staffSearch').oninput = searchStaff;
+    renderDayMeta(); renderTimetable();
+    
+    document.getElementById('printBtn').onclick = async () => {
+        const row = findDayInfo(selectedDate);
+        if(row){
+            let metaHtml = `<strong>Academic Year:</strong> ${currentYear} | <strong>Date:</strong> ${selectedDate} | <strong>Order:</strong> ${row["Day Order"] || 'N/A'}`;
+            if(row.Event) metaHtml += `<br><strong>Special Event/Exam:</strong> ${row.Event}`;
+            document.getElementById('printMetaInfo').innerHTML = metaHtml;
+        }
+        
+        let ip = "N/A";
+        try { 
+            const resp = await fetch('https://api.ipify.org?format=json'); 
+            const data = await resp.json(); 
+            ip = data.ip; 
+        } catch(e){}
+        document.getElementById('printDetails').textContent = `IP Address: ${ip} | Generated on: ${new Date().toLocaleString('en-IN')}`;
+        
+        window.print();
+    };
+}
+
+function renderDayMeta() {
+    const meta = document.getElementById('meta');
+    const row = findDayInfo(selectedDate);
+    const reasonEl = document.getElementById('holidayReason');
+    reasonEl.textContent = "";
+    if (!row) { meta.textContent = `No Data found`; renderTimetable(); return; }
+    const working = (row.Working || "").toLowerCase() === "yes";
+    if (!working) { meta.textContent = `${row.Day} | ${selectedDate} — Holiday`; reasonEl.textContent = row.Reason || "No specific reason provided."; }
+    else { meta.innerHTML = `${row.Day} | ${selectedDate} — Working Day | Order: ${row["Day Order"] || '-'}`; if(row.Event) meta.innerHTML += `<br>${row.Event}`; }
+    renderTimetable();
+}
+
+function renderTimetable() {
+    const row = findDayInfo(selectedDate);
+    const tc = document.getElementById('tableContainer');
+    const note = document.getElementById('ttNote');
+    tc.innerHTML = ""; note.textContent = "";
+
+    if (!row || (row.Working || "").toLowerCase() !== "yes") {
+        tc.innerHTML = `<p style="text-align:center;color:#d9534f;font-weight:600;padding:15px;background:#fef2f2;border-radius:6px;">Holiday: ${row?.Reason || "No classes scheduled"}</p>`;
+        return;
+    }
+
+    const hoursVal = (row.Hours || "").trim();
+    const isFullDayNoClass = hoursVal === "-";
+    let allowedHours = [];
+    if (hoursVal !== "" && hoursVal !== "-") {
+        allowedHours = hoursVal.split(',').map(h => h.trim());
+    }
+
+    const entry = ttMap[`${row["Day Order"].trim()}|${currentYear}`];
+    if (!entry) { tc.innerHTML = "<p>Timetable not found</p>"; return; }
+
+    let html = `<div class="table-responsive"><table><tr><th>Hour</th><th>Code</th><th>Subject</th><th>Staff</th><th>Time</th></tr>`;
+    
+    HOUR_COLS.forEach(h => {
+        const hNum = h.split(' ')[0].replace(/\D/g, ''); 
+        const isClassAllowed = !isFullDayNoClass && (hoursVal === "" || allowedHours.includes(hNum));
+        const val = entry[h] || "No Class";
+
+        if (!isClassAllowed || val === "No Class") {
+            html += `<tr style="background:#f9f9f9;color:#999;"><td>${h}</td><td>-</td><td>No Class</td><td>-</td><td>${timeSlots[h] || ""}</td></tr>`;
+        } else {
+            const [c, s, st] = splitSubject(val);
+            html += `<tr><td>${h}</td><td>${c}</td><td>${s}</td><td>${st}</td><td>${timeSlots[h] || ""}</td></tr>`;
+        }
+    });
+    
+    tc.innerHTML = html + "</table></div>";
+    note.textContent = `${currentYear} • Order ${row["Day Order"]} • ${selectedDate}`;
+}
+
+function searchStaff() {
+    const out = document.getElementById('searchOut');
+    const q = document.getElementById('staffSearch').value.trim().toLowerCase();
+    const sy = document.getElementById('searchYearSelect').value;
+    const ss = document.getElementById('searchSubjectSelect').value;
+    if (q.length < 2 && ss === "" && sy === "") { 
+        out.innerHTML = "<div style='text-align:center; padding-top: 20px;'>Use the filters or type the Staff Name in search bar</div>"; 
+        return; 
+    }
+    let allResults = [];
+    dayInfo.forEach(row => {
+        const order = row["Day Order"];
+        const hoursVal = (row.Hours || "").trim();
+        if (!order || (row.Working || "").toLowerCase() !== "yes" || hoursVal === "-") return;
+        
+        let allowedHours = (hoursVal === "") ? ["1", "2", "3", "4", "5"] : hoursVal.split(',').map(h => h.trim());
+
+        const years = sy ? [sy] : ["1st UG", "2nd UG", "3rd UG", "1st PG", "2nd PG"];
+        years.forEach(year => {
+            const entry = ttMap[`${order.trim()}|${year}`];
+            if (!entry) return;
+            HOUR_COLS.forEach(h => {
+                const hNum = h.split(' ')[0].replace(/\D/g, '');
+                if (hoursVal !== "" && !allowedHours.includes(hNum)) return;
+
+                const info = entry[h] || "";
+                if (!info || info === "No Class") return;
+                const [code, subject, staff] = splitSubject(info);
+                if ((q.length >= 2 ? staff.toLowerCase().includes(q) : true) && (ss === "" || subject.toLowerCase() === ss)) {
+                    allResults.push({ date: row.Date, dateObj: parseDate(row.Date), hour: h, code, subject, staff, year, order });
+                }
+            });
+        });
+    });
+    allResults.sort((a, b) => a.dateObj - b.dateObj);
+    let today = [], upcoming = [], past = [];
+    allResults.forEach(res => {
+        if (res.dateObj.getTime() === todayUTC.getTime()) today.push(res);
+        else if (res.dateObj.getTime() < todayUTC.getTime()) past.push(res);
+        else upcoming.push(res);
+    });
+    let html = '';
+    if (today.length) { html += `<h3 class="search-category-header">Today (${today.length})</h3>`; today.forEach(r => html += formatRes(r, 'today')); }
+    if (upcoming.length) { html += `<h3 class="search-category-header">Upcoming (${upcoming.length})</h3>`; upcoming.forEach(r => html += formatRes(r, 'upcoming')); }
+    if (past.length) { html += `<h3 class="search-category-header">Past (${past.length})</h3>`; past.reverse().forEach(r => html += formatRes(r, 'past')); }
+    out.innerHTML = html || "<p style='text-align:center;'>No matches found.</p>";
+}
+
+function formatRes(res, s) {
+    return `<div class="result-line"><div><span class="date"><strong>${res.date}</strong></span><span class="status ${s}">${s}</span></div>
+    <div style="font-size:0.95rem; margin-top:4px;"><strong>${res.hour}:</strong> ${res.code} - ${res.subject} - ${res.staff} (${res.year}, Order ${res.order})</div></div>`;
+}
+
+init();
+</script>
+</body>
+</html>
