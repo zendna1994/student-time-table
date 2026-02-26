@@ -35,6 +35,19 @@ body {
 }
 .wrap:hover { box-shadow: var(--hover-shadow); }
 
+/* Updated Top Header Section */
+.top-branding {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.top-branding img {
+    width: 80px;
+    transition: transform 0.2s;
+}
+.top-branding img:hover { transform: scale(1.05); }
+.top-branding h1 { margin: 10px 0 5px 0; font-size: 1.4rem; color: #1a3a5f; }
+.top-branding p { margin: 0; font-weight: bold; color: var(--secondary-color); font-size: 0.9rem; letter-spacing: 1px; }
+
 header {
     display: flex;
     justify-content: space-between;
@@ -187,12 +200,21 @@ button {
 .result-line .status.upcoming { background: #ffc107; color: #333; }
 .result-line .status.past { background: #6c757d; color: #fff; }
 
+.main-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+}
+
 /* PRINT STYLES */
 #printHeader, #printFooter { display: none; }
 
 @media print {
     body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .tabs, button, input, select, label, header, #clock, #yearTabs { display: none !important; }
+    .tabs, button, input, select, label, header, #clock, #yearTabs, .top-branding, .main-footer { display: none !important; }
     .wrap { box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
     #searchOut { max-height: none; overflow: visible; border: none; }
     
@@ -244,6 +266,14 @@ button {
 </head>
 <body>
 <div class="wrap">
+    <div class="top-branding">
+        <a href="https://azbtweb.wixsite.com/zen-dna" target="_blank">
+            <img src="https://static.wixstatic.com/media/e98a4d_b935ab57540b41bdb320efa88b5e69b1~mv2.png" alt="ZEN-DNA Logo">
+        </a>
+        <h1>ZOOLOGY E - LEARNING NETWORK</h1>
+        <p>Departmental Nurturing Academics</p>
+    </div>
+
     <div id="printHeader">
         <img src="https://static.wixstatic.com/media/e98a4d_b935ab57540b41bdb320efa88b5e69b1~mv2.png" alt="Logo">
         <h1>Zoology E-Learning Network - Departmental Nurturing Academics</h1>
@@ -310,6 +340,10 @@ button {
         </div>
         <div id="searchOut" style="text-align:center; padding-top: 20px;">Use the filters or type the Staff Name in search bar</div>
     </div>
+
+    <footer class="main-footer">
+        © 2026 by ZEN - DNA
+    </footer>
 
     <div id="printFooter">
         <p>This is generated in timetable student section of ZEN - DNA website.</p>
